@@ -1,0 +1,5 @@
+.env
+**/node_modules/
+**/chat_history.json
+**/metadata.json
+**/storage.json
