@@ -12,21 +12,17 @@ function App() {
     const [activeChatId, setActiveChatId] = useState(null)
     const [sidebarOpen, setSidebarOpen] = useState(true)
 
-    // Slash Command State
     const [slashMenu, setSlashMenu] = useState({ open: false, type: 'services', data: [], selectedIndex: 0, triggerIndex: 0 });
     const [activeService, setActiveService] = useState(null)
 
-    // Account Selection State
     const [accountSelection, setAccountSelection] = useState({ open: false, service: null, accounts: [], pendingQuery: null })
     const [selectedAccounts, setSelectedAccounts] = useState({})
 
-    // Context Selection State (for pages, repos, etc.)
     const [contextSelection, setContextSelection] = useState({ open: false, service: null, type: null, options: [], pendingQuery: null, search: '' })
     const [selectedContext, setSelectedContext] = useState({})
     const [braveModalOpen, setBraveModalOpen] = useState(false);
     const [braveKey, setBraveKey] = useState('');
 
-    // For Rich Input Cursor Stability
     const composerRef = useRef(null);
     const lastValueRef = useRef('');
 
@@ -146,7 +142,6 @@ function App() {
             const data = await res.json();
             setChats(data.chats || []);
 
-            // Removed auto-load logic to prevent new chat race conditions
 
         } catch (e) {
             console.error("Failed to check status", e);
@@ -196,19 +191,16 @@ function App() {
         }
     }
 
-    // Input Change Handler for Rich Composer
     const handleInputChange = (e) => {
         const value = e.target.innerText;
         lastValueRef.current = value;
         setInput(value);
 
-        // Get cursor position in contenteditable
         const selection = window.getSelection();
         if (!selection.rangeCount) return;
         const range = selection.getRangeAt(0);
         const cursorPos = range.startOffset;
 
-        // Find the word being typed (at cursor)
         const textBeforeCursor = value.substring(0, cursorPos);
         const lastSlashIndex = textBeforeCursor.lastIndexOf('/');
 
@@ -236,13 +228,11 @@ function App() {
         setSlashMenu(prev => ({ ...prev, open: false }));
     };
 
-    // Effect to sync rich input with state changes from OUTSIDE (e.g. menu selection)
     useEffect(() => {
         if (composerRef.current && input !== lastValueRef.current) {
             composerRef.current.innerHTML = renderMessageHTML(input);
             lastValueRef.current = input;
 
-            // Move cursor to end after external update
             const range = document.createRange();
             const sel = window.getSelection();
             range.selectNodeContents(composerRef.current);
@@ -255,7 +245,6 @@ function App() {
     const handleSelectPrompt = (prompt) => {
         setInput(prompt);
         setSlashMenu({ open: false, type: 'services', data: [], selectedIndex: 0 });
-        // Optionally auto-submit: 
         const finalQuery = activeService ? `/${activeService.id} ${prompt}` : prompt;
         processQuery(finalQuery);
     };
@@ -325,10 +314,8 @@ function App() {
 
             if (data.chatId && !activeChatId) {
                 setActiveChatId(data.chatId);
-                // Don't call checkStatus here to avoid state race conditions
             }
 
-            // Handle Account Selection Request
             if (data.action === "select_account") {
                 setAccountSelection({
                     open: true,
@@ -340,7 +327,6 @@ function App() {
                 return;
             }
 
-            // Handle Context Selection Request (e.g. Pages, Repos)
             if (data.action === "select_context") {
                 setContextSelection({
                     open: true,
@@ -595,7 +581,6 @@ function App() {
                 </div>
 
                 <footer className="composer-area">
-                    {/* Slash Command Menu */}
                     {slashMenu.open && (
                         <div className="slash-menu-container glass">
                             <div className="slash-menu-header">
@@ -657,7 +642,6 @@ function App() {
                 </footer>
             </main>
 
-            {/* Account Selection Modal */}
             {accountSelection.open && (
                 <div className="modal-overlay" onClick={() => setAccountSelection({ ...accountSelection, open: false })}>
                     <div className="modal-content glass" onClick={(e) => e.stopPropagation()}>
@@ -693,7 +677,6 @@ function App() {
                 </div>
             )}
 
-            {/* Context Selection Modal (e.g. Pages, Repos) */}
             {contextSelection.open && (
                 <div className="modal-overlay" onClick={() => setContextSelection({ ...contextSelection, open: false })}>
                     <div className="modal-content glass" onClick={(e) => e.stopPropagation()}>
@@ -745,6 +728,5 @@ function App() {
     )
 }
 
-// Added missing FileText import from lucide-react in the top import line above
 
 export default App

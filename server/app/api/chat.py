@@ -38,17 +38,14 @@ async def delete_chat(chat_id: str, username: str = Depends(get_current_user)):
 @router.post("/chat")
 async def chat_endpoint(request: ChatRequest, username: str = Depends(get_current_user)):
     try:
-        # 1. Global Initialization
         client, metadata = init_engine()
 
         chat_id = request.chatId or storage.create_new_chat(username)
         if not request.isRetry:
             storage.add_message(username, chat_id, "user", request.message)
 
-        # 2. Routing with specific service identification
         route = route_query(client, request.message, request.history)
         
-        # 3. Normal Chat handling
         if route["category"] == "NORMAL_CHAT":
             messages = [
                 {"role": "system", "content": "You are a helpful AI. Scope: Conversational/Informational. Do NOT mention tools/integrations."}
@@ -66,15 +63,11 @@ async def chat_endpoint(request: ChatRequest, username: str = Depends(get_curren
             storage.add_message(username, chat_id, "model", content)
             return {"response": content, "chatId": chat_id}
 
-        # 4. Service Related - Validation
         target_service = route["service"]
         
-        # 8 & 9. Immediate Authentication Check (Move this up)
-        # Even before validation, if we know the service, check auth
         if target_service and target_service not in ["none", "platform"]:
             storage_service = ("google" if any(x in target_service for x in ["google", "gmail", "calendar"]) else target_service).lower()
             
-            # Skip auth check for keyless services
             if storage_service not in ["web-search"]:
                 accounts = storage.get_service_accounts(username, storage_service)
                 if not accounts:
@@ -87,16 +80,13 @@ async def chat_endpoint(request: ChatRequest, username: str = Depends(get_curren
             client, request.message, target_service, request.history
         )
 
-        # 6. Genuine response if tools don't satisfy
         if not is_available:
             storage.add_message(username, chat_id, "model", gatekeeper_msg)
             return {"response": gatekeeper_msg, "chatId": chat_id}
 
-        # Derive service for account handling
         storage_service = ("google" if any(x in active_service for x in ["google", "gmail", "calendar"]) else active_service).lower()
         accounts = storage.get_service_accounts(username, storage_service)
 
-        # 10. Multi-Account Logic
         selected_account_id = (request.selectedAccounts or {}).get(storage_service)
         
         if operation_type == "WRITE" and not selected_account_id and storage_service != "platform":
@@ -107,7 +97,6 @@ async def chat_endpoint(request: ChatRequest, username: str = Depends(get_curren
                 "chatId": chat_id
             }
 
-        # Notion Selection logic (preserve)
         if storage_service == "notion":
             page_id = (request.selectedContext or {}).get("notion_page")
             if not page_id:
@@ -141,7 +130,6 @@ async def chat_endpoint(request: ChatRequest, username: str = Depends(get_curren
         active_account = next((a for a in accounts if a["account_id"] == selected_account_id), accounts[0] if accounts else None)
         active_label = active_account["label"] if active_account else None
 
-        # 7. Execute MCP tool loop
         mcp_client = await get_mcp_client(username, request.selectedAccounts, target_service=active_service)
         if not mcp_client:
             return {"response": "Failed to initialize service client. Please try again."}
@@ -185,7 +173,6 @@ async def chat_endpoint(request: ChatRequest, username: str = Depends(get_curren
             t_name = tool_name_map.get(tool_call.function.name, tool_call.function.name)
             t_args = json.loads(tool_call.function.arguments)
 
-            # Special handling for multi-account READ
             if operation_type == "READ" and len(accounts) > 1 and not selected_account_id and storage_service != "platform":
                 result_text = await execute_multi_account_tool(username, storage_service, t_name, t_args)
             else:
@@ -196,7 +183,6 @@ async def chat_endpoint(request: ChatRequest, username: str = Depends(get_curren
 
             messages.append({"role": "tool", "tool_call_id": tool_call.id, "name": tool_call.function.name, "content": result_text})
 
-        # 11. Final summary after tool call
         summary_resp = client.chat.completions.create(
             model="llama-3.1-8b-instant",
             messages=messages,

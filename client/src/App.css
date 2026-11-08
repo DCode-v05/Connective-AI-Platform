@@ -40,14 +40,12 @@ body {
     width: 100vw;
 }
 
-/* Glass Utility */
 .glass {
     background: var(--glass);
     backdrop-filter: blur(16px) saturate(180%);
     border: 1px solid var(--glass-border);
 }
 
-/* Sidebar Styling */
 .sidebar {
     width: var(--sidebar-width);
     background: var(--sidebar-bg);
@@ -200,7 +198,6 @@ body {
     color: #10b981;
 }
 
-/* Main Content Styling */
 .main-content {
     flex: 1;
     display: flex;
@@ -265,7 +262,6 @@ body {
     border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
-/* Chat Viewport */
 .chat-viewport {
     flex: 1;
     overflow-y: auto;
@@ -274,7 +270,6 @@ body {
     flex-direction: column;
 }
 
-/* Empty State */
 .empty-state {
     flex: 1;
     display: flex;
@@ -378,7 +373,6 @@ body {
     letter-spacing: -0.01em;
 }
 
-/* Messages Flow */
 .messages-flow {
     width: 100%;
     display: flex;
@@ -487,14 +481,12 @@ body {
     }
 }
 
-/* Composer Area */
 .composer-area {
     padding: 24px;
     width: 100%;
     position: relative;
 }
 
-/* Slash Menu Styling */
 .slash-menu-container {
     position: absolute;
     bottom: calc(100% - 10px);
@@ -726,7 +718,6 @@ body {
     margin-top: 12px;
 }
 
-/* Auth Pages Styling (keeping consistent) */
 .auth-wrapper {
     height: 100vh;
     width: 100vw;
@@ -871,7 +862,6 @@ body {
     text-align: center;
 }
 
-/* --- Modal Styles --- */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -1126,7 +1116,6 @@ body {
     font-style: italic;
 }
 
-/* Scrollbar */
 ::-webkit-scrollbar {
     width: 6px;
 }

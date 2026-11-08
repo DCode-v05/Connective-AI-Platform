@@ -69,7 +69,6 @@ def route_query(client: Groq, message: str, history: List[Dict[str, Any]] = []) 
 def validate_tool_availability(client: Groq, message: str, targeted_service: str, history: List[Dict[str, Any]] = []) -> Tuple[bool, str, Optional[str], str]:
     metadata = GLOBAL_METADATA
     
-    # Always include platform tools
     services_to_check = ["platform"]
     if targeted_service and targeted_service != "none":
         services_to_check.append(targeted_service)
@@ -193,7 +192,6 @@ def clean_history_for_groq(history: List[Dict[str, Any]], limit: int = 10) -> Li
                     text_content = str(resp.get("response", {}).get("result", "")) or "Done."
                     if len(text_content) > 2000:
                         text_content = text_content[:1000] + "\n...[TRUNCATED]...\n" + text_content[-1000:]
-                    # Use a stable but unique ID for history matching
                     messages.append({
                         "role": "tool", 
                         "tool_call_id": f"call_{t_name}_{idx}_{p_idx}", 
